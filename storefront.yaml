@@ -2,9 +2,9 @@ openapi: '3.0.2'
 info:
   title: Store Front
   version: '1.0'
+  description: The base store front url per tenant
 servers:
   - url: https://storefront.getbeyond.com/api/{tenant}
-    description: The base store front url per tenant
     variables:
       'tenant':
         default: 'global'
