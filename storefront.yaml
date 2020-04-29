@@ -1,0 +1,474 @@
+openapi: '3.0.2'
+info:
+  title: Store Front
+  version: '1.0'
+servers:
+  - url: https://storefront.getbeyond.com/api/{tenant}
+    description: The base store front url per tenant
+    variables:
+      'tenant':
+        default: 'global'
+tags:
+  - name: Global Admin
+    description: Opreations that can be performed only by a global admin.
+    externalDocs:
+      description: Find out more
+      url: 'http://getbeyond.com'
+  - name: Merchant
+    description: Actions/Operations that can be performed by a Merchant admin user.
+  - name: Authenticated Consumer
+    description: Actions/Operations that can be performed by an authenticated user.
+  - name: Anonymous
+    description: Operations about user
+    externalDocs:
+      description: Find out more about our store
+      url: 'http://getbeyond.com'
+
+components:
+  schemas:
+    Tenants:
+      type: array 
+      items:     
+        $ref: '#/components/schemas/Tenant'
+
+    Tenant:
+      type: object
+      properties:
+        tenantId:
+          type: string
+          format: uuid
+        tenantKey:
+          type: string
+        name:
+          type: string
+        tagLine:
+          type: string
+        tenantTypeId:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date-time
+        terminationDate:
+          type: string
+          format: date-time
+          
+    MenuItems:
+      type: array
+      items:
+        $ref: '#/components/schemas/MenuItem'
+        
+    MenuItem:
+      type: object
+      required: 
+        - menuId
+          name
+          description
+          price
+          sku
+      properties:
+        menuItemId:
+          type: integer
+          format: int64
+        menuId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: string
+        isTaxable:
+          type: boolean
+          default: false
+        taxId:
+          type: integer
+          format: int64
+          default: 1
+        sortOrder:
+          type: integer
+          format: int64
+          default: -1
+        sku:
+          type: string
+        isActive:
+          type: boolean
+          default: false
+        imageUrl:
+          type: string
+          format: uri
+          default: 'https://cdn.getbeyond.com/images/food-item.png'
+    Menu:
+      description: Menu is a grouping of Menu items, there can be many menus per merchant and a menu-item can be part of multiple menus.
+      type: object
+      required:
+        - menuId
+          tenantId
+          name
+      properties:
+        menuId:
+          type: integer
+          format: int64
+        tenantId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+          default: null
+    Order:
+      description: Order to be placed
+      type: object
+      properties:
+        OrderId:
+          type: integer
+          format: int64
+        OrderKey:
+          type: string
+          format: uuid
+        TenantId:
+          type: string
+          format: uuid
+        CustomerId:
+          type: string
+          default: 'anonymous'
+        IsDelivery:
+          type: boolean
+          default: false
+        TipAmount:
+          type: number
+          format: float
+          default: 0.0
+        TaxAmount:
+          type: number
+          format: float
+          default: 0.0
+        OrderFulfillmentType:
+          type: string
+          enum: 
+            - delivery
+            - curb side
+            - shipping
+        DeliveryAmount:
+          type: number
+          format: float
+        TaxId:
+          type: integer
+          format: int32
+          default: 0
+        OrderLineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLineItem'
+    OrderLineItem:
+      type: object
+      properties:
+        OrderDetailId:
+          type: integer
+        OrderId:
+          type: integer
+        MenuItemId:
+          type: integer
+        Quantity:
+          type: integer
+        Price:
+          type: number
+          format: float
+        Comments:
+          type: string
+          maximum: 250
+    OrderFulfillmentDetails:
+      type: object
+      properties:
+        OrderId:
+          type: integer
+        AddressLine1:
+          type: string
+        AddressLine2:
+          type: string
+        City:
+          type: string
+        Zip:
+          type: string
+          pattern: '\d{5}\-\d{4}'
+
+  responses:
+    UnauthorizedError:
+      description: Invalid credentials provided.
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
+
+  securitySchemes:
+    JWT_Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    API_Key:
+      type: apiKey
+      name: api_key
+      in: header
+    OAuth_2:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'https://login.microsoftonline.com/{tenant}/oauth/2.0/token'
+          scopes:
+            Global.Read: Read any tenant information
+            Global.Write: Write any tenant information
+            Tenant.Read: Read any data about a selected tenant (per tenant scope)
+            Tenant.Write: Write any data about the selected tenant
+            Customer.Guest: Enables the current (anonymous user) to continue as a guest.
+paths:
+  /tenants:
+    description: Operation only allowed for global admins to get a full list of tenants.
+    get:
+      description: Get a list of all Tenants
+      tags:
+        - Global Admin
+      security:
+        - OAuth_2: [Global.Read]
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Tenants'
+    post:
+      description: Add a new Tenant
+      tags: 
+        - Global Admin
+      security: 
+        - OAuth_2: [Global.Write]
+      requestBody:
+        description: A new tenant object to be persisted
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Tenant'
+      responses:
+        '201':
+          description: Object Created!
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Tenant'
+            'application/xml':
+              schema:
+                $ref: '#/components/schemas/Tenant'
+
+  /profile:
+    description: Endpoint to operate on a single tenant information
+    get:
+      description: Get the profile of specified tenant
+      tags:
+        - Anonymous
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Tenant'
+      security:
+        - OAuth_2: [Tenant.Read]
+      
+    put:
+      tags: 
+        - Global Admin
+        - Merchant
+      description: Update the profile informaiton of a tenant
+      security: 
+        - OAuth_2: [Tenant.Write]
+        - API_Key: []
+        - JWT_Bearer: []
+      requestBody:
+        description: Tenant object to be saved to the database.
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Tenant'
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Tenant'
+  /menu-items:
+    description: Endpoint to operate on menu items of a tenant
+    get:
+      description: Get a list of all menu items available for the merchant
+      tags: 
+        - Anonymous
+      parameters:
+        - name: menuId
+          description: If menu-items need to be filtered by a specific menu, pass in this parameter.
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MenuItems'
+        '404':
+          description: No menu items found for tenant
+    post:
+      description: Add a new menu item to the menu
+      tags:
+        - Merchant
+        - Global Admin
+      requestBody:
+        description: The menu item to be persisted.
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/MenuItem'
+      responses:
+        '201':
+          description: Object created
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+              
+  /menu-items/{itemId}:
+    parameters:
+      - name: itemId
+        description: If menu-items need to be filtered by a specific menu, pass in this parameter.
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Get the details of a specific menu item
+      tags:
+        - Anonymous
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+    put:
+      description: Update a menu-item details
+      tags:
+        - Merchant
+      requestBody:
+        description: Updated menu-item object
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/MenuItem'
+      responses:
+        '201':
+          description: Menu item updated
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+  /menus:
+    description: Endpoint to operate on menu items of a tenant
+    get:
+      description: Get a list of all menu items available for the merchant. If a global endpoint is used, this endpoint will return all menus for all merchants.
+      tags: 
+        - Anonymous
+      parameters:
+        - name: tenantId
+          description: If a global endpoint is used this is a way to filter the menus to a specific merchant.
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MenuItems'
+        '404':
+          description: No menu items found for tenant
+    post:
+      description: Add a new menu item to the menu
+      tags:
+        - Merchant
+        - Global Admin
+      requestBody:
+        description: The menu item to be persisted.
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Menu'
+      responses:
+        '201':
+          description: Object created
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/MenuItem'
+              
+  /menus/{itemId}:
+    parameters:
+      - name: itemId
+        description: If menu-items need to be filtered by a specific menu, pass in this parameter.
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      description: Get the details of a specific menu
+      tags:
+        - Anonymous
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Menu'
+    put:
+      description: Update a menu-item details
+      tags:
+        - Merchant
+        - Global Admin
+      requestBody:
+        description: Updated menu-item object
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/MenuItem'
+      responses:
+        '201':
+          description: Menu item updated
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Menu'
+        '404':
+          description: Not found
+  /checkout:
+    post:
+      description: post a cart to checkout.
+      tags:
+        - Anonymous
+      requestBody:
+        description: Order to be placed
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '201':
+          description: Order placed
+      
