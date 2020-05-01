@@ -118,6 +118,12 @@ components:
         description:
           type: string
           default: null
+
+    Orders:
+      type: array
+      items:
+        $ref: '#/components/schemas/Order'
+
     Order:
       description: Order to be placed
       type: object
@@ -458,8 +464,21 @@ paths:
         '404':
           description: Not found
   /orders:
+    get:
+      description: Get all placed orders that the logged in user has access to in the tenant.
+      tags:
+        - Authenticated Consumer
+        - Merchant
+        - Global Admin
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Orders'
     post:
-      description: post a cart to checkout.
+      description: Place the order.
       tags:
         - Anonymous
       requestBody:
@@ -471,4 +490,22 @@ paths:
       responses:
         '201':
           description: Order placed
-      
+  /orders/{orderId}:
+    parameters:
+      - name: orderId
+        description: id of the order to be retreived.
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      description: post a cart to checkout.
+      tags:
+        - Anonymous
+      responses:
+        '200':
+          description: OK
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/Order'
