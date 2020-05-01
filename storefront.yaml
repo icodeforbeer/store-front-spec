@@ -1,10 +1,10 @@
 openapi: '3.0.2'
 info:
-  title: Store Front
+  title: Beyond Checkout
   version: '1.0'
   description: The base store front url per tenant
 servers:
-  - url: https://storefront.getbeyond.com/api/{tenant}
+  - url: https://checkout.getbeyond.com/api/v1/{tenant}
     variables:
       'tenant':
         default: 'global'
@@ -13,7 +13,7 @@ tags:
     description: Opreations that can be performed only by a global admin.
     externalDocs:
       description: Find out more
-      url: 'http://getbeyond.com'
+      url: 'http://getbeyond.com/checkout'
   - name: Merchant
     description: Actions/Operations that can be performed by a Merchant admin user.
   - name: Authenticated Consumer
@@ -22,7 +22,7 @@ tags:
     description: Operations about user
     externalDocs:
       description: Find out more about our store
-      url: 'http://getbeyond.com'
+      url: 'http://getbeyond.com/checkout'
 
 components:
   schemas:
@@ -457,7 +457,7 @@ paths:
                 $ref: '#/components/schemas/Menu'
         '404':
           description: Not found
-  /checkout:
+  /orders:
     post:
       description: post a cart to checkout.
       tags:
