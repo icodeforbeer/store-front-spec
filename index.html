@@ -4,8 +4,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Beyond store front API spec</title>
-    <link rel="stylesheet" type="text/css" href="./swagger-ui.css" >
-    <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
+    <link rel="stylesheet" type="text/css" href="./assets/swagger-ui.css" >
+    <link rel="icon" type="image/png" href="./assets/favicon-32x32.png" sizes="32x32" />
     <style>
       html
       {
@@ -29,7 +29,7 @@
       /* Custom CSS  */
 
       .topbar-wrapper img {
-        content: url(beyond-logo.png);
+        content: url(./assets/beyond-logo.png);
       }
 
       .topbar {
@@ -46,13 +46,13 @@
   <body>
     <div id="swagger-ui"></div>
 
-    <script src="./swagger-ui-bundle.js"> </script>
-    <script src="./swagger-ui-standalone-preset.js"> </script>
+    <script src="./assets/swagger-ui-bundle.js"> </script>
+    <script src="./assets/swagger-ui-standalone-preset.js"> </script>
     <script>
     window.onload = function() {
       // Begin Swagger UI call region
       const ui = SwaggerUIBundle({
-        url: "./storefront.yaml",
+        url: "./specs/storefront.yaml",
         dom_id: '#swagger-ui',
         deepLinking: true,
         presets: [

@@ -1,7 +1,7 @@
 openapi: '3.0.2'
 info:
   title: Beyond Checkout
-  version: '1.0'
+  version: '1.0-beta'
   description: The base store front url per tenant
 servers:
   - url: https://checkout.getbeyond.com/api/v1/{tenant}
@@ -509,3 +509,5 @@ paths:
             'application/json':
               schema:
                 $ref: '#/components/schemas/Order'
+        '404':
+          description: Order not found
