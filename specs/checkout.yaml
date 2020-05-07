@@ -992,7 +992,7 @@ components:
           type: string
           default: US
   securitySchemes:
-    API Key:
+    API-Key:
       name: X-API-KEY
       type: apiKey
       in: header
