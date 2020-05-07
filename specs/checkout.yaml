@@ -993,7 +993,7 @@ components:
           default: US
   securitySchemes:
     API Key:
-      name: API Key
+      name: X-API-KEY
       type: apiKey
       in: header
       description: "API Key to be used by Beyond One for getting/updating tenant's information"
